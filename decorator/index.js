@@ -86,6 +86,7 @@ const buildEniToSecurityGroupMapping = async () => {
     `NetworkInterfaces[].{
       interfaceId: NetworkInterfaceId,
       securityGroupIds: Groups[].GroupId,
+      securityGroupNames: Groups[].GroupName,
       ipAddress: PrivateIpAddresses[?Primary].PrivateIpAddress
     }`);
   
@@ -167,6 +168,7 @@ const decorateRecords = async (records, mapping) => {
     let eniData = find(mapping, { 'interfaceId': record.data['interface-id'] });
     if (eniData) {
       record.data['security-group-ids'] = eniData.securityGroupIds;
+      record.data['security-group-ids'] = eniData.securityGroupNames;
       record.data['direction'] = (record.data['destaddr'] == eniData.ipAddress) ? 'inbound' : 'outbound';
     } else {
       console.log(`No ENI data found for interface ${record.data['interface-id']}`);
