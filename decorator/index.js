@@ -169,8 +169,8 @@ const decorateRecords = async (records, mapping) => {
     let eniData = find(mapping, { 'interfaceId': record.data['interface-id'] });
     if (eniData) {
       record.data['security-group-ids'] = eniData.securityGroupIds;
-      record.data['security-group-ids'] = eniData.securityGroupNames;
-      record.data['security-group-ids'] = eniData.instanceIds;
+      record.data['security-group-names'] = eniData.securityGroupNames;
+      record.data['instance-ids'] = eniData.instanceIds;
       record.data['direction'] = (record.data['destaddr'] == eniData.ipAddress) ? 'inbound' : 'outbound';
     } else {
       console.log(`No ENI data found for interface ${record.data['interface-id']}`);
