@@ -141,6 +141,11 @@ To clean-up the Lambda functions when you are finished with this sample:
 $ aws cloudformation delete-stack --stack-name vpc-flow-log-appender-dev
 ```
 
+
+## Curl to create an index
+
+curl -XPUT 'ES-URL/your_index_name?pretty' -H 'Content-Type: application/json' -d' { "mappings": { "XXXXX": { "properties": { "agent": { "type": "text" }, "client-ip": { "type": "text" }, "host": { "type": "text" }, "method": { "type": "text" }, "protocol": { "type": "text" }, "remote-user": { "type": "text" }, "request": { "type": "text" }, "request_time": { "type": "text" }, "response": { "type": "text" }, "datetime": { "type": "date", "format": "strict_date_optional_time" } } } } } '
+
 ## Updates
 
 * Aug 2 2018 - Updated decorator function and geocode modue to use ipstacks as previous service is now defunct. Amended README to include new instructions on using ipstacks.

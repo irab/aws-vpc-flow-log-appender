@@ -175,23 +175,6 @@ const decorateRecords = async (records, mapping) => {
     } else {
       console.log(`No ENI data found for interface ${record.data['interface-id']}`);
     }
-
-    let srcaddr = record.data['srcaddr'];
-    let geo = process.env.GEOLOCATION_ENABLED === 'false'
-                || isRfc1918Address(srcaddr) ? null : await geocode(srcaddr)
-
-    if (geo) console.log(JSON.stringify(geo))
-
-    // append geo data to existing record
-    record.data['source-country-code'] = geo ? geo.country_code : ''
-    record.data['source-country-name'] = geo ? geo.country_name : ''
-    record.data['source-region-code']  = geo ? geo.region_code : ''
-    record.data['source-region-name']  = geo ? geo.region_name : ''
-    record.data['source-city']         = geo ? geo.city : ''
-    record.data['source-location']     = {
-      lat: geo ? Number(geo.latitude) : 0,
-      lon: geo ? Number(geo.longitude) : 0
-    }
     
     console.log(JSON.stringify(record))
   }
@@ -249,7 +232,7 @@ exports.handler = (event, context, callback) => {
 
   Promise.all([ buildEniToSecurityGroupMapping(), extractRecords(event.records) ])
     .then( (results) => {
-      console.log('Finished building ENI to Security Group Mappig and Extracting Records');
+      console.log('Finished building ENI to Security Group Mapping and Extracting Records');
       return decorateRecords(results[1], results[0])
     })
     .then( (records) => {

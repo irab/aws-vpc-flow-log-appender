@@ -33,11 +33,11 @@ Resources:
   # Data is received from CloudWatch Logs and pushed to Kinesis Firehose.
   #
   FlowLogIngestionFunction:
-    Type: "AWS::Serverless::Function"
+    Type: AWS::Serverless::Function
     Properties:
-      Handler: "index.handler"
-      Runtime: "nodejs6.10"
-      CodeUri: "ingestor/"
+      Handler: index.handler
+      Runtime: nodejs8.10
+      CodeUri: ingestor/
       Policies:
         - Version: "2012-10-17"
           Statement:
