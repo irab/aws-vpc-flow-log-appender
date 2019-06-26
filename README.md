@@ -160,9 +160,6 @@ To clean-up the Lambda functions when you are finished with this sample:
 $ aws cloudformation delete-stack --stack-name vpc-flow-log-appender-dev
 ```
 
-
-
-
 ## Updates
 
 * Jun 26 2019 - Updated Ingestor Function to nodejs to v8.10, as v6.10 is now deprecated and deployment was failing. Also added VPC and Subnet data fields.
