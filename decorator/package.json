@@ -1,7 +1,7 @@
 {
   "name": "vpc-flow-log-appender",
   "version": "1.0.0",
-  "description": "Appends security group and additional details for use by Elastic Serach and VPC flow logs",
+  "description": "Appends security group and additional details for use by Elasticsearch and VPC flow logs",
   "main": "index.js",
   "author": "jkahn@",
   "license": "Apache-2.0",

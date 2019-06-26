@@ -31,6 +31,25 @@ To run the vpc-flow-log-appender sample, you will need to:
 3. [Install aws-sam-cli](https://github.com/awslabs/aws-sam-cli).
 4. [Install Node.js and NPM](https://docs.npmjs.com/getting-started/installing-node).
 
+## Optional - IP Datatype mapping from String to IP
+
+Elasticsearch can support the [IP Datatype](https://www.elastic.co/guide/en/elasticsearch/reference/6.7/ip.html) but to do in Node would require some refactoring. As remapping can be done on the fly by elasticsearch, the following curl request is a quick enabler. This allows searches by CIDR ranges. **NOTE** this will need to be run before any data is indexed:
+
+```bash
+curl -X PUT "https://$your_elasticsearch_domain_here/flowlogs" -H 'Content-Type: application/json' -d'
+{
+  "mappings": {
+    "logs": {
+      "properties": { 
+        "destaddr":    { "type": "ip"  },
+        "srcaddr":    { "type": "ip"  }
+      }
+    }
+  }
+}
+'
+```
+
 ## Configure Geolocation
 
 If you would like to geolocate the source IP address of traffic in your VPC flow logs, you can configure a free account at ipstack.com. Note that the free tier of this service is *not* intended for production use.
@@ -90,7 +109,7 @@ The deployment of our AWS resources is managed by the [AWS SAM CLI](https://gith
                  --parameter-overrides GeolocationEnabled=true
     ```
 
- 4. Once we have deployed our Lambda functions, configure CloudWatch logs to stream VPC Flow Logs to Elasticsearch as described [here](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_ES_Stream.html).
+4. Once we have deployed our Lambda functions, configure CloudWatch logs to stream VPC Flow Logs to Elasticsearch as described [here](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_ES_Stream.html).
 
 ## Testing
 
@@ -142,12 +161,11 @@ $ aws cloudformation delete-stack --stack-name vpc-flow-log-appender-dev
 ```
 
 
-## Curl to create an index
 
-curl -XPUT 'ES-URL/your_index_name?pretty' -H 'Content-Type: application/json' -d' { "mappings": { "XXXXX": { "properties": { "agent": { "type": "text" }, "client-ip": { "type": "text" }, "host": { "type": "text" }, "method": { "type": "text" }, "protocol": { "type": "text" }, "remote-user": { "type": "text" }, "request": { "type": "text" }, "request_time": { "type": "text" }, "response": { "type": "text" }, "datetime": { "type": "date", "format": "strict_date_optional_time" } } } } } '
 
 ## Updates
 
+* Jun 26 2019 - Updated Ingestor Function to nodejs to v8.10, as v6.10 is now deprecated and deplopyment was failing. Also added VPC and Subnet data fields.
 * Aug 2 2018 - Updated decorator function and geocode modue to use ipstacks as previous service is now defunct. Amended README to include new instructions on using ipstacks.
 * Jun 9 2017 - Fixed issue in which decorator did not return all records to Firehose when geocoder was over 15,000 per hour limit. Instead, will return blank geo data. Added Test methodology.
 
