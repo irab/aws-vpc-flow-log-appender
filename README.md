@@ -33,7 +33,7 @@ To run the vpc-flow-log-appender sample, you will need to:
 
 ## Optional - IP Datatype mapping from String to IP
 
-Elasticsearch can support the [IP Datatype](https://www.elastic.co/guide/en/elasticsearch/reference/6.7/ip.html) but to do in Node would require some refactoring. As remapping can be done on the fly by elasticsearch, the following curl request is a quick enabler. This allows searches by CIDR ranges. **NOTE** this will need to be run before any data is indexed:
+Elasticsearch can support the [IP Datatype](https://www.elastic.co/guide/en/elasticsearch/reference/6.7/ip.html) but to export in Node would require some refactoring. As remapping can be done on the fly by elasticsearch, the following curl request is a quick enabler. This allows searches by CIDR ranges. **NOTE** This needs to be run before any data is indexed from the Ingestor Function:
 
 ```bash
 curl -X PUT "https://$your_elasticsearch_domain_here/flowlogs" -H 'Content-Type: application/json' -d'
@@ -165,7 +165,7 @@ $ aws cloudformation delete-stack --stack-name vpc-flow-log-appender-dev
 
 ## Updates
 
-* Jun 26 2019 - Updated Ingestor Function to nodejs to v8.10, as v6.10 is now deprecated and deplopyment was failing. Also added VPC and Subnet data fields.
+* Jun 26 2019 - Updated Ingestor Function to nodejs to v8.10, as v6.10 is now deprecated and deployment was failing. Also added VPC and Subnet data fields.
 * Aug 2 2018 - Updated decorator function and geocode modue to use ipstacks as previous service is now defunct. Amended README to include new instructions on using ipstacks.
 * Jun 9 2017 - Fixed issue in which decorator did not return all records to Firehose when geocoder was over 15,000 per hour limit. Instead, will return blank geo data. Added Test methodology.
 
