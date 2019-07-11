@@ -35,7 +35,8 @@ License for the specific language governing permissions and limitations under th
 const find = require('lodash.find');
 const EC2 = require('aws-sdk/clients/ec2');
 const jmespath = require('jmespath');
-const geocode = require('./geocode');
+const maxmind = require('maxmind');
+const iplookup = maxmind.openSync('./GeoLite2-City.mmdb');
 
 /**
  * Regular expression to parse VPC Flow Log format.
@@ -169,6 +170,7 @@ const decorateRecords = async (records, mapping) => {
 
   for(let record of records) {
     let eniData = find(mapping, { 'interfaceId': record.data['interface-id'] });
+
     if (eniData) {
       record.data['security-group-ids'] = eniData.securityGroupIds;
       record.data['security-group-names'] = eniData.securityGroupNames;
@@ -176,10 +178,20 @@ const decorateRecords = async (records, mapping) => {
       record.data['direction'] = (record.data['destaddr'] == eniData.ipAddress) ? 'inbound' : 'outbound';
       record.data['vpc-id'] = eniData.vpcId;
       record.data['subnet-id'] = eniData.SubnetId;
-      
-    } else {
+    } 
+    else { console.log(`No ENI data found for interface ${record.data['interface-id']}`);}
 
-      console.log(`No ENI data found for interface ${record.data['interface-id']}`);
+    let srcaddr = record.data['srcaddr'];
+    let geo = isRfc1918Address(srcaddr) ? null : iplookup.get(srcaddr);
+
+    console.log(iplookup.get(srcaddr))
+    // append geo data to existing record
+
+    record.data['source-city']         = geo ? geo.city.names.en : ''
+    record.data['source-country']      = geo ? geo.country.names.en : ''
+    record.data['source-location']     = {
+      lat: geo ? Number(geo.location.latitude) : 0,
+      lon: geo ? Number(geo.location.longitude) : 0
     }
 
     console.log(JSON.stringify(record))
