@@ -184,11 +184,12 @@ const decorateRecords = async (records, mapping) => {
 
     if (srcaddr !== undefined) {
       let geo = isRfc1918Address(srcaddr) ? null : iplookup.get(srcaddr);
-      if (geo) {          // append geo data to existing record
+      // append geo data to existing record as AWS Elasticsearch doesn't support the Ingester GeoIP Processor builtin to Elasticsearch 6.7
+      if (geo) {          
         record.data['source-country']      = geo.country.names.en
         record.data['source-location']     = {
-          lat: Number(geo.location.latitude),
-          lon: Number(geo.location.longitude)
+          lon: Number(geo.location.longitude),
+          lat: Number(geo.location.latitude)
         }
      }
     }
