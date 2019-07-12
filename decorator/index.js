@@ -153,7 +153,6 @@ const extractRecords = async (records) => {
  */
 const isRfc1918Address = (ipAddress) => {
   let re = /(^127\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)/;
-
   return (ipAddress.match(re) !== null);
 }
 
@@ -170,7 +169,6 @@ const decorateRecords = async (records, mapping) => {
 
   for(let record of records) {
     let eniData = find(mapping, { 'interfaceId': record.data['interface-id'] });
-
     if (eniData) {
       record.data['security-group-ids'] = eniData.securityGroupIds;
       record.data['security-group-names'] = eniData.securityGroupNames;
@@ -179,22 +177,21 @@ const decorateRecords = async (records, mapping) => {
       record.data['vpc-id'] = eniData.vpcId;
       record.data['subnet-id'] = eniData.SubnetId;
     } 
-    else { console.log(`No ENI data found for interface ${record.data['interface-id']}`);}
 
     let srcaddr = record.data['srcaddr'];
-    let geo = isRfc1918Address(srcaddr) ? null : iplookup.get(srcaddr);
+    
+    //some flowlogs are error/fail parsing so srcaddr is undefined. Only do lookup when srcaddr is defined
 
-    console.log(iplookup.get(srcaddr))
-    // append geo data to existing record
-
-    record.data['source-city']         = geo ? geo.city.names.en : ''
-    record.data['source-country']      = geo ? geo.country.names.en : ''
-    record.data['source-location']     = {
-      lat: geo ? Number(geo.location.latitude) : 0,
-      lon: geo ? Number(geo.location.longitude) : 0
+    if (srcaddr !== undefined) {
+      let geo = isRfc1918Address(srcaddr) ? null : iplookup.get(srcaddr);
+      if (geo) {          // append geo data to existing record
+        record.data['source-country']      = geo.country.names.en
+        record.data['source-location']     = {
+          lat: Number(geo.location.latitude),
+          lon: Number(geo.location.longitude)
+        }
+     }
     }
-
-    console.log(JSON.stringify(record))
   }
 
   console.log(`Finished with ${records.length} records`)
@@ -237,7 +234,6 @@ const packageRecords = async (records) => {
   console.log(`Processing completed.  Successful records ${success}, Failed records ${failure}.`);
   return Promise.resolve(result)
 }
-
 
 /**
  * 
