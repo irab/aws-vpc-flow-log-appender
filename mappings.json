@@ -1,0 +1,17 @@
+{
+    "mappings": {
+        "logs": {
+            "properties": {
+                "destaddr": {
+                    "type": "ip"
+                },
+                "srcaddr": {
+                    "type": "ip"
+                },
+                "source-location": {
+                    "type": "geo_point"
+                }
+            }
+        }
+    }
+}

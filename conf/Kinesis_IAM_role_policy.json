@@ -1,0 +1,120 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": [
+        "s3:AbortMultipartUpload",
+        "s3:GetBucketLocation",
+        "s3:GetObject",
+        "s3:ListBucket",
+        "s3:ListBucketMultipartUploads",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::baileyi2-log-appender-sandpit",
+        "arn:aws:s3:::baileyi2-log-appender-sandpit/*"
+      ]
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:InvokeFunction",
+        "lambda:GetFunctionConfiguration"
+      ],
+      "Resource": "arn:aws:lambda:ap-southeast-2:280610808083:function:vpc-flow-log-appender-FlowLogDecoratorFunction-8EBHISUF642Q:$LATEST"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kms:GenerateDataKey",
+        "kms:Decrypt"
+      ],
+      "Resource": [
+        "arn:aws:kms:ap-southeast-2:280610808083:key/f636d64b-fcc5-4295-aec1-f53d60ae69c1"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "kms:ViaService": "s3.ap-southeast-2.amazonaws.com"
+        },
+        "StringLike": {
+          "kms:EncryptionContext:aws:s3:arn": [
+            "arn:aws:s3:::baileyi2-log-appender-sandpit/*",
+            "arn:aws:s3:::baileyi2-log-appender-sandpit/%FIREHOSE_BUCKET_PREFIX%*"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": [
+        "es:DescribeElasticsearchDomain",
+        "es:DescribeElasticsearchDomains",
+        "es:DescribeElasticsearchDomainConfig",
+        "es:ESHttpPost",
+        "es:ESHttpPut"
+      ],
+      "Resource": [
+        "arn:aws:es:ap-southeast-2:280610808083:domain/baileyi2-es-flowlogs1",
+        "arn:aws:es:ap-southeast-2:280610808083:domain/baileyi2-es-flowlogs1/*"
+      ]
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": [
+        "es:ESHttpGet"
+      ],
+      "Resource": [
+        "arn:aws:es:ap-southeast-2:280610808083:domain/baileyi2-es-flowlogs1/_all/_settings",
+        "arn:aws:es:ap-southeast-2:280610808083:domain/baileyi2-es-flowlogs1/_cluster/stats",
+        "arn:aws:es:ap-southeast-2:280610808083:domain/baileyi2-es-flowlogs1/flowlogs*/_mapping/logs",
+        "arn:aws:es:ap-southeast-2:280610808083:domain/baileyi2-es-flowlogs1/_nodes",
+        "arn:aws:es:ap-southeast-2:280610808083:domain/baileyi2-es-flowlogs1/_nodes/stats",
+        "arn:aws:es:ap-southeast-2:280610808083:domain/baileyi2-es-flowlogs1/_nodes/*/stats",
+        "arn:aws:es:ap-southeast-2:280610808083:domain/baileyi2-es-flowlogs1/_stats",
+        "arn:aws:es:ap-southeast-2:280610808083:domain/baileyi2-es-flowlogs1/flowlogs*/_stats"
+      ]
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": [
+        "logs:PutLogEvents"
+      ],
+      "Resource": [
+        "arn:aws:logs:ap-southeast-2:280610808083:log-group:/aws/kinesisfirehose/VPCFlowLogsToElasticSearch:log-stream:*"
+      ]
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": [
+        "kinesis:DescribeStream",
+        "kinesis:GetShardIterator",
+        "kinesis:GetRecords"
+      ],
+      "Resource": "arn:aws:kinesis:ap-southeast-2:280610808083:stream/%FIREHOSE_STREAM_NAME%"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kms:Decrypt"
+      ],
+      "Resource": [
+        "arn:aws:kms:ap-southeast-2:280610808083:key/%SSE_KEY_ID%"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "kms:ViaService": "kinesis.%REGION_NAME%.amazonaws.com"
+        },
+        "StringLike": {
+          "kms:EncryptionContext:aws:kinesis:arn": "arn:aws:kinesis:%REGION_NAME%:280610808083:stream/%FIREHOSE_STREAM_NAME%"
+        }
+      }
+    }
+  ]
+}
