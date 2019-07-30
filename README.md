@@ -52,17 +52,11 @@ curl -X PUT "https://$your_elasticsearch_domain_here/flowlogs" -H 'Content-Type:
 
 ## Configure Geolocation
 
-If you would like to geolocate the source IP address of traffic in your VPC flow logs, you can configure a free account at ipstack.com. Note that the free tier of this service is *not* intended for production use.
-
-To sign-up for a free account at ipstack.com, visit https://ipstack.com/signup/free to obtain an API key.
-
-Once you have obtained your API key, store it in EC2 Systems Manager Parameter Store as follows (replace MY_API_KEY with your own):
+If you would like to geolocate the source IP address of traffic in your VPC flow logs, you can download the GeoLite2 database and add it to the root folder before  
 
 ``` bash
-$ aws ssm put-parameter \
-      --name ipstack-api-key \
-      --value MY_API_KEY \
-      --type SecureString
+mkdir db
+curl https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz | tar xvz --strip-components=1 -C db
 ```
 
 ## Preparing to Deploy Lambda

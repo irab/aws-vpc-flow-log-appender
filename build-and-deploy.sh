@@ -1,18 +1,18 @@
 #!/bin/bash
 
-profile=$profile
-account=$(aws sts get-caller-identity --profile sandpit --query Account --output text)
-region=ap-southeast-2
-esdomain=$esdomain
-s3bucket=$s3bucket
+profile=$1
+account=$(aws sts get-caller-identity --profile $profile --query Account --output text)
+region=$2
+esdomain=es-$profile
+s3bucket=$profile-flowlog-s3bucket
 myip=$(curl -s https://www.cloudflare.com/cdn-cgi/trace | grep ip| sed 's/^ip=//')
 flowlogs_log_group=flow-logs
 ### Access Policy for ES Domain
-access_policy="{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":\"es:*\",\"Resource\":\"arn:aws:es:ap-southeast-2:$account:domain/$domain/*\",\"Condition\":{\"IpAddress\":{\"aws:SourceIp\":\"$myip\"}}}]}"
+access_policy="{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":\"es:*\",\"Resource\":\"arn:aws:es:ap-southeast-2:$account:domain/$esdomain/*\",\"Condition\":{\"IpAddress\":{\"aws:SourceIp\":\"$myip\"}}}]}"
 
 function CreateESDomain {
     aws es create-elasticsearch-domain \
-    --domain-name $domain \
+    --domain-name $esdomain \
     --elasticsearch-version=6.7 \
     --profile $profile \
     --region $region \
@@ -22,7 +22,7 @@ function CreateESDomain {
     echo -e "\033[32mWaiting 10s to allow cluster to be discoverable..."
     sleep 10
 
-    isprocessing=$(aws es describe-elasticsearch-domain --domain-name $domain --profile $profile --region $region --query DomainStatus.Processing)
+    isprocessing=$(aws es describe-elasticsearch-domain --domain-name $esdomain --profile $profile --region $region --query DomainStatus.Processing)
     echo -en "ES Cluster is still processing: $isprocessing\n\n"
     processing_time=0
 
@@ -30,7 +30,7 @@ function CreateESDomain {
     do
     echo -en "Post-deployment processing usually takes 360s. So far you have waited: $processing_time\r"
     sleep 5
-    isprocessing=$(aws es describe-elasticsearch-domain --domain-name $domain --profile $profile --region $region --query DomainStatus.Processing)
+    isprocessing=$(aws es describe-elasticsearch-domain --domain-name $esdomain --profile $profile --region $region --query DomainStatus.Processing)
     ((processing_time=$processing_time+5))
     done
 
@@ -41,7 +41,7 @@ function CreateESDomain {
 function AddFlowlogIndex {
     echo Creating Flowlogs Index Mapping...
     sleep 5
-    es_endpoint=$(aws es describe-elasticsearch-domain --domain-name $domain --profile $profile --region $region --query DomainStatus.Endpoint --output text)
+    es_endpoint=$(aws es describe-elasticsearch-domain --domain-name $esdomain --profile $profile --region $region --query DomainStatus.Endpoint --output text)
     echo $es_endpoint
     if $(curl -s "https://$es_endpoint/flowlogs" -H 'Content-Type: application/json' --upload-file mappings.json| grep -q true);
         then echo -e "\033[32mFlowlog Index mapping created successfully!";
@@ -54,7 +54,11 @@ function CreateS3Bucket {
 }
 
 function PackageAndDeployLambdas {
-    npm install decorator && npm install ingestor
+    cd decorator
+    npm install
+    cd ../ingestor
+    npm install
+    cd ..
     sam package --template-file template.yaml --s3-bucket $s3bucket --output-template-file packaged.yaml --profile $profile --region $region
     sam deploy --template-file packaged.yaml --stack-name vpc-flow-log-appender --capabilities CAPABILITY_IAM --profile $profile --region $region
 }
